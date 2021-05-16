@@ -6,7 +6,7 @@
 // LLVM. "aarch64-unknown-windows" is used to get the minimal subset of windows-specific features.
 
 use super::uefi_msvc_base;
-use crate::spec::{CodeModel, Target};
+use crate::spec::{CodeModel, LinkerFlavor, LldFlavor, Target};
 
 pub fn target() -> Target {
     let mut base = uefi_msvc_base::opts();
@@ -26,7 +26,7 @@ pub fn target() -> Target {
     // arguments, thus giving you access to full MMX/SSE acceleration.
     base.features = "-mmx,-sse,+soft-float".to_string();
 
-    let pre_link_args_msvc = vec!["/machine:arm64"];
+    let pre_link_args_msvc = vec!["/machine:arm64".to_string()];
 
     base.pre_link_args.get_mut(&LinkerFlavor::Msvc).unwrap().extend(pre_link_args_msvc.clone());
     base.pre_link_args

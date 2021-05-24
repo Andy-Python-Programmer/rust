@@ -11,20 +11,7 @@ use crate::spec::{CodeModel, LinkerFlavor, LldFlavor, Target};
 pub fn target() -> Target {
     let mut base = uefi_msvc_base::opts();
 
-    base.cpu = "aarch64".to_string();
     base.max_atomic_width = Some(64);
-
-    // We disable MMX and SSE for now, even though UEFI allows using them. Problem is, you have to
-    // enable these CPU features explicitly before their first use, otherwise their instructions
-    // will trigger an exception. Rust does not inject any code that enables AVX/MMX/SSE
-    // instruction sets, so this must be done by the firmware. However, existing firmware is known
-    // to leave these uninitialized, thus triggering exceptions if we make use of them. Which is
-    // why we avoid them and instead use soft-floats. This is also what GRUB and friends did so
-    // far.
-    //
-    // If you initialize FP units yourself, you can override these flags with custom linker
-    // arguments, thus giving you access to full MMX/SSE acceleration.
-    base.features = "-mmx,-sse,+soft-float".to_string();
 
     let pre_link_args_msvc = vec!["/machine:arm64".to_string()];
 

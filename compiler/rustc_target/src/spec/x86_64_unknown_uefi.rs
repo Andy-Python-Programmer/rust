@@ -19,14 +19,19 @@ pub fn target() -> Target {
     // to leave these uninitialized, thus triggering exceptions if we make use of them. Which is
     // why we avoid them and instead use soft-floats. This is also what GRUB and friends did so
     // far.
+    //
     // If you initialize FP units yourself, you can override these flags with custom linker
     // arguments, thus giving you access to full MMX/SSE acceleration.
     base.features = "-mmx,-sse,+soft-float".to_string();
 
-    // UEFI systems run without a host OS, hence we cannot assume any code locality. We must tell
-    // LLVM to expect code to reference any address in the address-space. The "large" code-model
-    // places no locality-restrictions, so it fits well here.
-    base.code_model = Some(CodeModel::Large);
+    // Since the code model only applies to the code and not the data and the code model
+    // only applies to functions you call through using `call`, `jmp` and data with `lea`, etc…
+    //
+    // If you are calling functions using the function pointers from the UEFI structures the code
+    // model does not apply in that case. It’s just related to the address space size of your own binary.
+    // Since UEFI (uefi is all relocatable) uses relocatable PEs (relocatable code does not care about the
+    // code model) so, we use the small code model here.
+    base.code_model = Some(CodeModel::Small);
 
     Target {
         llvm_target: "x86_64-unknown-windows".to_string(),
